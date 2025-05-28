@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
 ActiveRecord::Schema[7.1].define(version: 2025_05_28_114815) do
-=======
-ActiveRecord::Schema[7.1].define(version: 2025_05_28_095409) do
->>>>>>> 9f0643295f8318745117fd935501964f74f9cc22
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -72,7 +68,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_05_28_095409) do
     t.string "first_name"
     t.string "last_name"
     t.string "job_position"
-    t.boolean "admin", default: false
+    t.boolean "admin", default: false, null: false
     t.string "team"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
