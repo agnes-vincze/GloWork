@@ -10,7 +10,7 @@
              <h5> <%= suggestion.suggestion %></h5>
               <p> <%= suggestion.date %> </p>
               <p> <%= suggestion.actioned %> </p>
-              <%= link to "Edit", edit_suggestions_path(suggestion)%>
+             
               <%= link_to "Delete", suggestion_path(suggestion), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
             </div>
           <% end %>
