@@ -1,5 +1,6 @@
-.container {
+.suggestions-container {
   margin-top: 40px;
+
 }
 
 // .d-flex {
@@ -13,6 +14,8 @@
   border-radius: 16px;
   padding: 20px;
   box-shadow: 1px 1px 6px 1px rgba(0, 0, 0, 0.2);
+  height: 70vh;
+  overflow: scroll;
 }
 
 .right {

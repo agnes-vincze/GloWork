@@ -1,1 +1,28 @@
 // Specific CSS for your home-page
+.visitors-container {
+  margin-top: 40px;
+  max-width: none;
+  width: 100vw;
+}
+
+.left-visitor {
+  height: 60vh;
+  width: 69%;
+  background-color: aqua;
+
+}
+
+.right-visitor {
+   height: 60vh;
+   width: 29%;
+   background-color: red;
+}
+
+.gap-visitor {
+    height: 60vh;
+  width: 2%;
+}
+
+.visitor-text {
+  align-items: center;
+}
