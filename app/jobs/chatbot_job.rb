@@ -4,17 +4,16 @@ class ChatbotJob < ApplicationJob
   def perform(question)
     @question = question
 
+    Rails.logger.info("🔧 ChatbotJob started for Question ##{question.id}")
+    Rails.logger.info("🔑 OpenRouter key present? #{ENV["OPENROUTER_API_KEY"].present?}")
+
     begin
       chatgpt_response = fetch_response_with_fallback
       new_content = chatgpt_response["choices"][0]["message"]["content"]
       question.update(ai_answer: new_content, processing: false)
     rescue => e
-      Rails.logger.error("ChatbotJob failed: #{e.class} - #{e.message}")
+      Rails.logger.error("🔥 ChatbotJob failed: #{e.class} - #{e.message}")
       question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.", processing: false)
-      rescue => e
-       Rails.logger.error("🔥 OpenAI request failed: #{e.class} - #{e.message}")
-      question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.", processing: false)
-
     ensure
       Turbo::StreamsChannel.broadcast_update_to(
         "question_#{question.id}",
@@ -23,10 +22,6 @@ class ChatbotJob < ApplicationJob
         locals: { question: question }
       )
     end
-
-    Rails.logger.info("🔧 ChatbotJob started for Question ##{question.id}")
-    Rails.logger.info("🔑 OpenAI key present? #{ENV["OPENAI_ACCESS_TOKEN"].present?}")
-
   end
 
   private
@@ -35,15 +30,15 @@ class ChatbotJob < ApplicationJob
     begin
       client.chat(
         parameters: {
-          model: "gpt-4o-mini",
+          model: "mistralai/mistral-7b-instruct",
           messages: questions_formatted_for_openai
         }
       )
     rescue Faraday::TooManyRequestsError => e
-      Rails.logger.warn("gpt-4o-mini rate limited, falling back to gpt-3.5-turbo: #{e.message}")
+      Rails.logger.warn("⚠️ Mistral rate limited, falling back to GPT-3.5: #{e.message}")
       client.chat(
         parameters: {
-          model: "gpt-3.5-turbo",
+          model: "openai/gpt-3.5-turbo",
           messages: questions_formatted_for_openai
         }
       )
@@ -51,12 +46,16 @@ class ChatbotJob < ApplicationJob
   end
 
   def client
-    @client ||= OpenAI::Client.new(access_token: ENV["OPENAI_ACCESS_TOKEN"])
+    @client ||= OpenAI::Client.new(
+      access_token: ENV["OPENROUTER_API_KEY"],
+      uri_base: "https://openrouter.ai/api/v1"
+    )
   end
 
   def questions_formatted_for_openai
-    questions = @question.user.questions
+    questions = @question.user.questions.order(created_at: :asc).last(5)
     results = []
+
     results << {
       role: "system",
       content: "You are a friendly and professional assistant helping remote workers improve their mood and well-being at work.
