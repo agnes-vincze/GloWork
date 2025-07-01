@@ -2,31 +2,6 @@ class ChatbotJob < ApplicationJob
   queue_as :default
 
  def perform(question)
-<<<<<<< HEAD
-  question.update!(processing: true)
-
-  # your existing OpenAI API call here
-  chatgpt_response = client.chat(
-    parameters: {
-      model: "gpt-4o-mini",
-      messages: questions_formatted_for_openai
-    }
-  )
-  new_content = chatgpt_response["choices"][0]["message"]["content"]
-  question.update!(ai_answer: new_content, processing: false)
-
-  Turbo::StreamsChannel.broadcast_update_to(
-    "question_#{question.id}",
-    target: "question_#{question.id}",
-    partial: "questions/question", locals: { question: question }
-  )
-
-rescue Faraday::TooManyRequestsError => e
-  # handle retries as before
-  # On failure, make sure to reset processing flag
-  question.update!(processing: false)
-  raise e
-=======
   @question = question
   retries ||= 0
   begin
@@ -53,7 +28,6 @@ rescue Faraday::TooManyRequestsError => e
     question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.")
     end
   end
->>>>>>> 5a0482bbf15983458931958b4145469522c6c5f6
 end
 
 
