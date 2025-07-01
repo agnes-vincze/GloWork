@@ -9,7 +9,7 @@ class Question < ApplicationRecord
     update(processing: true)
   end
 
-  def processing?
-    processing
-  end
+  # def processing?
+  #   self.processing
+  # end
 end
