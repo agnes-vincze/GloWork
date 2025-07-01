@@ -1,22 +1,35 @@
 class ChatbotJob < ApplicationJob
   queue_as :default
 
-  def perform(question)
-    @question = question
+ def perform(question)
+  @question = question
+  retries ||= 0
+  begin
     chatgpt_response = client.chat(
       parameters: {
         model: "gpt-4o-mini",
-        messages: questions_formatted_for_openai # to code as private method
+        messages: questions_formatted_for_openai
       }
     )
     new_content = chatgpt_response["choices"][0]["message"]["content"]
-
     question.update(ai_answer: new_content)
     Turbo::StreamsChannel.broadcast_update_to(
       "question_#{@question.id}",
       target: "question_#{@question.id}",
-      partial: "questions/question", locals: { question: question })
+      partial: "questions/question", locals: { question: question }
+    )
+  rescue Faraday::TooManyRequestsError => e
+    retries += 1
+    if retries <= 3
+      sleep(2 ** retries) # exponential backoff: 2,4,8 seconds
+      retry
+    else
+    Rails.logger.error("OpenAI rate limit exceeded: #{e.message}")
+    question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.")
+    end
   end
+end
+
 
   private
 
