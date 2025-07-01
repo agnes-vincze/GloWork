@@ -4,12 +4,8 @@ class Question < ApplicationRecord
   after_create :fetch_ai_answer
 
   def fetch_ai_answer
-    return if processing?  # prevent enqueueing if already processing
-    ChatbotJob.perform_later(self)
+    return if processing?  # Rails auto-defines `processing?` if you have a boolean column named `processing`
     update(processing: true)
+    ChatbotJob.perform_later(self)
   end
-
-  # def processing?
-  #   self.processing
-  # end
 end
