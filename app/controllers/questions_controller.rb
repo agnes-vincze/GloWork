@@ -17,10 +17,14 @@ class QuestionsController < ApplicationController
         end
         format.html { redirect_to questions_path }
       end
-    else
-      render :index, status: :unprocessable_entity
+      format.html { redirect_to questions_path }
     end
+  else
+    render :index, status: :unprocessable_entity
   end
+end
+
+
 
   private
 
