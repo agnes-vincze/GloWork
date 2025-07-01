@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_welcome_modal_flag
 
+  DEFAULT_COLOR_COMPANY = '#FFEC1C'
 
 
   def set_welcome_modal_flag
@@ -22,18 +23,46 @@ class ApplicationController < ActionController::Base
     calculate_percentages(user_moods)
   end
 
-  def mood_bar_methods
-    if user_signed_in?
-      @range = "last week"
-      @moodtrackers = filtered_moodtrackers(@range)
-      @color_company = calculate_percentages(@moodtrackers)[:emojis][0][2]
-      @emoji_company = calculate_percentages(@moodtrackers)[:emojis][0][1]
-      @color_team = team_percentage(@moodtrackers)[:emojis][0][2]
-      @emoji_team = team_percentage(@moodtrackers)[:emojis][0][1]
 
-      @user_trends = mood_trends(Moodtracker.where(user: current_user), params[:range] || "last week")
-    end
-  end
+def mood_bar_methods
+  return unless user_signed_in?
+
+  @range = "last week"
+  @moodtrackers = filtered_moodtrackers(@range)
+
+  percentages = calculate_percentages(@moodtrackers) || {}
+  emojis = percentages[:emojis] || []
+
+  # fallback default color (use a hex code or define a constant)
+  default_color = '#FFEC1C'
+  default_emoji = '😐'
+
+  @color_company = emojis.dig(0, 2) || default_color
+  @emoji_company = emojis.dig(0, 1) || default_emoji # fallback emoji, adjust as needed
+
+  team_percents = team_percentage(@moodtrackers) || {}
+  team_emojis = team_percents[:emojis] || []
+
+  @color_team = team_emojis.dig(0, 2) || default_color
+  @emoji_team = team_emojis.dig(0, 1) || default_emoji
+
+  @user_trends = mood_trends(Moodtracker.where(user: current_user), params[:range] || @range)
+end
+
+
+  # def mood_bar_methods
+  #   if user_signed_in?
+  #     @range = "last week"
+  #     @moodtrackers = filtered_moodtrackers(@range)
+  #     # @color_company = calculate_percentages(@moodtrackers)[:emojis][0][2]
+  #     @color_company = calculate_percentages(@moodtrackers)&.dig(:emojis, 0, 2) || 'default_color'
+  #     @emoji_company = calculate_percentages(@moodtrackers)[:emojis][0][1]
+  #     @color_team = team_percentage(@moodtrackers)[:emojis][0][2]
+  #     @emoji_team = team_percentage(@moodtrackers)[:emojis][0][1]
+
+  #     @user_trends = mood_trends(Moodtracker.where(user: current_user), params[:range] || "last week")
+  #   end
+  # end
 
   def filtered_moodtrackers_by(moods, range, previous: false)
     case range
