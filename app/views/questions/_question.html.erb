@@ -1,9 +1,15 @@
 <div id="<%= dom_id(question) %>" class="question">
   <%= turbo_stream_from dom_id(question) %>
 
-  <p class="user-question"><%= question.user_question %></p>
-  <div class="ai-answer" data-controller="question" >
-    <p><%= markdown(question.ai_answer || "...") %></p>
-  </div>
+  <p class="user-question"><strong>You:</strong> <%= question.user_question %></p>
 
+  <div class="ai-answer" data-controller="question">
+    <% if question.processing? %>
+      <p><em>💬 Thinking...</em></p>
+    <% elsif question.ai_answer.present? %>
+      <p><strong>GlowBot:</strong> <%= markdown(question.ai_answer) %></p>
+    <% else %>
+      <p><em>⚠️ No response available.</em></p>
+    <% end %>
+  </div>
 </div>
