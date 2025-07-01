@@ -11,6 +11,10 @@ class ChatbotJob < ApplicationJob
     rescue => e
       Rails.logger.error("ChatbotJob failed: #{e.class} - #{e.message}")
       question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.", processing: false)
+      rescue => e
+       Rails.logger.error("🔥 OpenAI request failed: #{e.class} - #{e.message}")
+      question.update(ai_answer: "Sorry, I'm temporarily unable to answer. Please try again later.", processing: false)
+
     ensure
       Turbo::StreamsChannel.broadcast_update_to(
         "question_#{question.id}",
@@ -19,6 +23,10 @@ class ChatbotJob < ApplicationJob
         locals: { question: question }
       )
     end
+
+    Rails.logger.info("🔧 ChatbotJob started for Question ##{question.id}")
+    Rails.logger.info("🔑 OpenAI key present? #{ENV["OPENAI_ACCESS_TOKEN"].present?}")
+
   end
 
   private
