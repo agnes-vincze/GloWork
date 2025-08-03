@@ -79,5 +79,6 @@ test:
 #
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
-
+  database: glo_work_production
+  username: glo_work
+  password: <%= ENV["GLO_WORK_DATABASE_PASSWORD"] %>
